@@ -99,8 +99,9 @@ form.addEventListener("submit", async (e) => {
       saveLocal();
       render();
     }
+    if (entry.author) localStorage.setItem("chris_author", entry.author);
     form.reset();
-    if (authorInput.value) localStorage.setItem("chris_author", authorInput.value);
+    if (entry.author) authorInput.value = entry.author;
     titleInput.focus();
   } catch (err) {
     console.error(err);
