@@ -46,6 +46,24 @@
       </div>
     </header>
 
+    <section class="list-section">
+      <div class="list-header">
+        <h2>Mini Liste</h2>
+        <div class="filters" role="tablist">
+          <button class="chip active" data-filter="all" role="tab" aria-selected="true">Alles</button>
+          <button class="chip" data-filter="open" role="tab" aria-selected="false">No offe</button>
+          <button class="chip" data-filter="reserved" role="tab" aria-selected="false">Scho gnoh</button>
+        </div>
+      </div>
+
+      <div id="status" class="status-msg" hidden></div>
+      <ul id="wishList" class="wish-list" aria-live="polite"></ul>
+      <div id="emptyState" class="empty glass" hidden>
+        <div class="empty-emoji">🎁</div>
+        <p>No nüt uf dr Liste. Muess mir no ebbis iifalle.</p>
+      </div>
+    </section>
+
     <section class="card glass form-card">
       <h2>Öppis Nüs uf d'Liste</h2>
       <form id="wishForm" autocomplete="off">
@@ -77,24 +95,6 @@
           <span class="hint">Tipp: eifach <kbd>Enter</kbd> drucke</span>
         </div>
       </form>
-    </section>
-
-    <section class="list-section">
-      <div class="list-header">
-        <h2>Mini Liste</h2>
-        <div class="filters" role="tablist">
-          <button class="chip active" data-filter="all" role="tab" aria-selected="true">Alles</button>
-          <button class="chip" data-filter="open" role="tab" aria-selected="false">No offe</button>
-          <button class="chip" data-filter="reserved" role="tab" aria-selected="false">Scho gnoh</button>
-        </div>
-      </div>
-
-      <div id="status" class="status-msg" hidden></div>
-      <ul id="wishList" class="wish-list" aria-live="polite"></ul>
-      <div id="emptyState" class="empty glass" hidden>
-        <div class="empty-emoji">🎁</div>
-        <p>No nüt uf dr Liste. Muess mir no ebbis iifalle.</p>
-      </div>
     </section>
 
     <footer class="footer">
