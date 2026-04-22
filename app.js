@@ -16,7 +16,6 @@ import {
 const form = document.getElementById("wishForm");
 const titleInput = document.getElementById("title");
 const linkInput = document.getElementById("link");
-const authorInput = document.getElementById("author");
 const noteInput = document.getElementById("note");
 const imagesInput = document.getElementById("images");
 const fileDrop = document.getElementById("fileDrop");
@@ -65,18 +64,18 @@ if (isConfigured) {
       (err) => {
         console.error(err);
         showStatus(
-          "Verbindung zur Datenbank fehlgeschlagen. Bitte Firestore-Regeln prüfen.",
+          "D'Verbindig zur Datebank hät nöd klappet. Bitte d'Firestore-Regle checke.",
           "error"
         );
       }
     );
   } catch (err) {
     console.error(err);
-    showStatus("Firebase konnte nicht initialisiert werden.", "error");
+    showStatus("Firebase hät sich nöd chöne aalegge.", "error");
   }
 } else {
   showStatus(
-    "Firebase ist noch nicht konfiguriert – siehe README.md. Aktuell werden Einträge nur lokal angezeigt.",
+    "Firebase isch no nöd konfiguriert – lueg im README. Jetzt werded d'Iiträg nur lokal gspeicheret.",
     "info"
   );
   loadLocal();
@@ -91,7 +90,7 @@ form.addEventListener("submit", async (e) => {
   const totalSize = images.reduce((sum, s) => sum + s.length, 0);
   if (totalSize > MAX_TOTAL_BYTES) {
     showStatus(
-      "Die Bilder sind zusammen zu gross. Bitte weniger oder kleinere Bilder verwenden.",
+      "D'Föteli sind zäme z'gross. Nimm weniger oder chliineri Bildli.",
       "error"
     );
     return;
@@ -100,7 +99,7 @@ form.addEventListener("submit", async (e) => {
   const entry = {
     title,
     link: linkInput.value.trim() || "",
-    author: authorInput.value.trim() || "",
+    author: "",
     note: noteInput.value.trim() || "",
     images,
     reserved: false,
@@ -109,7 +108,7 @@ form.addEventListener("submit", async (e) => {
   };
 
   submitBtn.disabled = true;
-  submitBtn.querySelector(".btn-text").textContent = "Speichere...";
+  submitBtn.querySelector(".btn-text").textContent = "Am ufneh...";
 
   try {
     if (db) {
@@ -122,23 +121,18 @@ form.addEventListener("submit", async (e) => {
       saveLocal();
       render();
     }
-    if (entry.author) localStorage.setItem("chris_author", entry.author);
     form.reset();
-    if (entry.author) authorInput.value = entry.author;
     pendingImages = [];
     renderImagePreview();
     titleInput.focus();
   } catch (err) {
     console.error(err);
-    showStatus("Konnte nicht gespeichert werden. Versuch's nochmal.", "error");
+    showStatus("Hät nöd chöne gspeicheret werde. Probier's nomal.", "error");
   } finally {
     submitBtn.disabled = false;
-    submitBtn.querySelector(".btn-text").textContent = "Hinzufügen";
+    submitBtn.querySelector(".btn-text").textContent = "Uf d'Liste";
   }
 });
-
-const savedAuthor = localStorage.getItem("chris_author");
-if (savedAuthor) authorInput.value = savedAuthor;
 
 filterButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
@@ -178,11 +172,11 @@ function render() {
   if (filtered.length === 0 && currentFilter !== "all") {
     emptyState.querySelector("p").textContent =
       currentFilter === "reserved"
-        ? "Nichts reserviert — noch ist alles offen."
-        : "Alles reserviert! 🎉";
+        ? "No nüt gnoh – alles no offe."
+        : "Alles scho gnoh! 🎉 Krass, merci.";
   } else {
     emptyState.querySelector("p").textContent =
-      "Noch keine Wünsche. Füge den ersten oben hinzu!";
+      "No nüt uf dr Liste. Muess mir no ebbis iifalle.";
   }
 }
 
@@ -214,7 +208,7 @@ function buildItem(w) {
 
   const authorEl = node.querySelector(".author");
   const dotSep = node.querySelector(".dot-sep");
-  authorEl.textContent = w.author ? `von ${w.author}` : "";
+  authorEl.textContent = w.author ? `vo ${w.author}` : "";
 
   const linkEl = node.querySelector(".wish-link");
   if (w.link) {
@@ -229,15 +223,15 @@ function buildItem(w) {
   const badge = node.querySelector(".badge");
   badge.hidden = !w.reserved;
   if (w.reserved && w.reservedBy) {
-    badge.textContent = `reserviert von ${w.reservedBy}`;
+    badge.textContent = `gnoh vo ${w.reservedBy}`;
   }
 
   const reserveBtn = node.querySelector(".btn-reserve");
   if (w.reserved) {
-    reserveBtn.textContent = "Reservierung aufheben";
+    reserveBtn.textContent = "Doch nöd gnoh";
     reserveBtn.classList.add("is-reserved");
   } else {
-    reserveBtn.textContent = "Reservieren";
+    reserveBtn.textContent = "Reserviere";
   }
 
   reserveBtn.addEventListener("click", async () => {
@@ -245,11 +239,12 @@ function buildItem(w) {
     let by = "";
     if (newReserved) {
       by = prompt(
-        "Dein Name (damit man weiss, wer es reserviert hat):",
-        authorInput.value || localStorage.getItem("chris_author") || ""
+        "Dii Name? (demit mer gsehnd, wer's gnoh hät)",
+        localStorage.getItem("chris_author") || ""
       );
       if (by === null) return;
       by = by.trim();
+      if (by) localStorage.setItem("chris_author", by);
     }
     try {
       if (db) {
@@ -265,13 +260,13 @@ function buildItem(w) {
       }
     } catch (err) {
       console.error(err);
-      showStatus("Konnte nicht aktualisiert werden.", "error");
+      showStatus("Hät nöd chöne aktualisiert werde.", "error");
     }
   });
 
   const delBtn = node.querySelector(".btn-delete");
   delBtn.addEventListener("click", async () => {
-    if (!confirm(`"${w.title}" wirklich löschen?`)) return;
+    if (!confirm(`"${w.title}" würkli vo dr Liste näh?`)) return;
     try {
       if (db) {
         await deleteDoc(doc(db, "wishes", w.id));
@@ -282,7 +277,7 @@ function buildItem(w) {
       }
     } catch (err) {
       console.error(err);
-      showStatus("Konnte nicht gelöscht werden.", "error");
+      showStatus("Hät nöd chöne glöscht werde.", "error");
     }
   });
 
@@ -334,7 +329,7 @@ fileDrop.addEventListener("drop", async (e) => {
 async function addFiles(files) {
   const remaining = MAX_IMAGES - pendingImages.length;
   if (remaining <= 0) {
-    showStatus(`Maximal ${MAX_IMAGES} Bilder pro Wunsch.`, "info");
+    showStatus(`Max ${MAX_IMAGES} Föteli pro Wunsch.`, "info");
     return;
   }
   const list = Array.from(files)
@@ -343,7 +338,7 @@ async function addFiles(files) {
   if (list.length === 0) return;
 
   const originalText = fileDrop.querySelector(".file-drop-text").textContent;
-  fileDrop.querySelector(".file-drop-text").textContent = "Bilder werden verkleinert...";
+  fileDrop.querySelector(".file-drop-text").textContent = "Föteli werded chliiner gmacht...";
   try {
     for (const f of list) {
       const dataUrl = await resizeImage(f);
@@ -351,7 +346,7 @@ async function addFiles(files) {
     }
   } catch (err) {
     console.error(err);
-    showStatus("Ein Bild konnte nicht verarbeitet werden.", "error");
+    showStatus("Es Fötteli hät nöd chöne verarbeitet werde.", "error");
   } finally {
     fileDrop.querySelector(".file-drop-text").textContent = originalText;
     renderImagePreview();
@@ -399,7 +394,7 @@ function renderImagePreview() {
     rm.type = "button";
     rm.className = "remove";
     rm.textContent = "✕";
-    rm.setAttribute("aria-label", "Entfernen");
+    rm.setAttribute("aria-label", "Wägnäh");
     rm.addEventListener("click", () => {
       pendingImages.splice(idx, 1);
       renderImagePreview();
