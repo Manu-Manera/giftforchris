@@ -18,6 +18,9 @@ const titleInput = document.getElementById("title");
 const linkInput = document.getElementById("link");
 const authorInput = document.getElementById("author");
 const noteInput = document.getElementById("note");
+const imagesInput = document.getElementById("images");
+const fileDrop = document.getElementById("fileDrop");
+const imagePreview = document.getElementById("imagePreview");
 const submitBtn = document.getElementById("submitBtn");
 const list = document.getElementById("wishList");
 const emptyState = document.getElementById("emptyState");
@@ -29,6 +32,15 @@ const statReserved = document.getElementById("statReserved");
 const statOpen = document.getElementById("statOpen");
 const infoLink = document.getElementById("infoLink");
 const infoDialog = document.getElementById("infoDialog");
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const lightboxClose = lightbox.querySelector(".lightbox-close");
+
+const MAX_IMAGES = 4;
+const MAX_DIM = 1000;
+const JPEG_QUALITY = 0.75;
+const MAX_TOTAL_BYTES = 900 * 1024;
+let pendingImages = [];
 
 let db = null;
 let wishes = [];
@@ -75,11 +87,22 @@ form.addEventListener("submit", async (e) => {
   const title = titleInput.value.trim();
   if (!title) return;
 
+  const images = pendingImages.slice(0, MAX_IMAGES);
+  const totalSize = images.reduce((sum, s) => sum + s.length, 0);
+  if (totalSize > MAX_TOTAL_BYTES) {
+    showStatus(
+      "Die Bilder sind zusammen zu gross. Bitte weniger oder kleinere Bilder verwenden.",
+      "error"
+    );
+    return;
+  }
+
   const entry = {
     title,
     link: linkInput.value.trim() || "",
     author: authorInput.value.trim() || "",
     note: noteInput.value.trim() || "",
+    images,
     reserved: false,
     reservedBy: "",
     createdAt: new Date().toISOString(),
@@ -102,6 +125,8 @@ form.addEventListener("submit", async (e) => {
     if (entry.author) localStorage.setItem("chris_author", entry.author);
     form.reset();
     if (entry.author) authorInput.value = entry.author;
+    pendingImages = [];
+    renderImagePreview();
     titleInput.focus();
   } catch (err) {
     console.error(err);
@@ -172,6 +197,19 @@ function buildItem(w) {
   if (w.note) {
     noteEl.textContent = w.note;
     noteEl.hidden = false;
+  }
+
+  const gallery = node.querySelector(".wish-gallery");
+  if (Array.isArray(w.images) && w.images.length > 0) {
+    gallery.hidden = false;
+    w.images.forEach((src) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = w.title;
+      img.loading = "lazy";
+      img.addEventListener("click", () => openLightbox(src));
+      gallery.appendChild(img);
+    });
   }
 
   const authorEl = node.querySelector(".author");
@@ -269,3 +307,114 @@ function loadLocal() {
 function saveLocal() {
   localStorage.setItem("chris_wishes", JSON.stringify(wishes));
 }
+
+imagesInput.addEventListener("change", async (e) => {
+  await addFiles(e.target.files);
+  imagesInput.value = "";
+});
+
+["dragenter", "dragover"].forEach((evt) => {
+  fileDrop.addEventListener(evt, (e) => {
+    e.preventDefault();
+    fileDrop.classList.add("drag-over");
+  });
+});
+["dragleave", "drop"].forEach((evt) => {
+  fileDrop.addEventListener(evt, (e) => {
+    e.preventDefault();
+    fileDrop.classList.remove("drag-over");
+  });
+});
+fileDrop.addEventListener("drop", async (e) => {
+  if (e.dataTransfer?.files) {
+    await addFiles(e.dataTransfer.files);
+  }
+});
+
+async function addFiles(files) {
+  const remaining = MAX_IMAGES - pendingImages.length;
+  if (remaining <= 0) {
+    showStatus(`Maximal ${MAX_IMAGES} Bilder pro Wunsch.`, "info");
+    return;
+  }
+  const list = Array.from(files)
+    .filter((f) => f.type.startsWith("image/"))
+    .slice(0, remaining);
+  if (list.length === 0) return;
+
+  const originalText = fileDrop.querySelector(".file-drop-text").textContent;
+  fileDrop.querySelector(".file-drop-text").textContent = "Bilder werden verkleinert...";
+  try {
+    for (const f of list) {
+      const dataUrl = await resizeImage(f);
+      pendingImages.push(dataUrl);
+    }
+  } catch (err) {
+    console.error(err);
+    showStatus("Ein Bild konnte nicht verarbeitet werden.", "error");
+  } finally {
+    fileDrop.querySelector(".file-drop-text").textContent = originalText;
+    renderImagePreview();
+  }
+}
+
+function resizeImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", JPEG_QUALITY));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderImagePreview() {
+  imagePreview.innerHTML = "";
+  if (pendingImages.length === 0) {
+    imagePreview.hidden = true;
+    return;
+  }
+  imagePreview.hidden = false;
+  pendingImages.forEach((src, idx) => {
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    const img = document.createElement("img");
+    img.src = src;
+    img.alt = "";
+    const rm = document.createElement("button");
+    rm.type = "button";
+    rm.className = "remove";
+    rm.textContent = "✕";
+    rm.setAttribute("aria-label", "Entfernen");
+    rm.addEventListener("click", () => {
+      pendingImages.splice(idx, 1);
+      renderImagePreview();
+    });
+    thumb.appendChild(img);
+    thumb.appendChild(rm);
+    imagePreview.appendChild(thumb);
+  });
+}
+
+function openLightbox(src) {
+  lightboxImg.src = src;
+  if (typeof lightbox.showModal === "function") lightbox.showModal();
+}
+lightboxClose.addEventListener("click", () => lightbox.close());
+lightbox.addEventListener("click", (e) => {
+  if (e.target === lightbox) lightbox.close();
+});

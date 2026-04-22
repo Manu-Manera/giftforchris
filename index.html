@@ -68,6 +68,15 @@
           <label for="note">Notiz (optional)</label>
           <textarea id="note" name="note" rows="2" maxlength="300" placeholder="Farbe, Grösse, weshalb, ..."></textarea>
         </div>
+        <div class="field">
+          <label for="images">Bilder (optional, max 4)</label>
+          <label class="file-drop" for="images" id="fileDrop">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3" ry="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span class="file-drop-text">Bilder auswählen oder hier ablegen</span>
+            <input id="images" name="images" type="file" accept="image/*" multiple hidden />
+          </label>
+          <div id="imagePreview" class="image-preview" hidden></div>
+        </div>
         <div class="actions">
           <button type="submit" class="btn btn-primary" id="submitBtn">
             <span class="btn-text">Hinzufügen</span>
@@ -100,6 +109,11 @@
     </footer>
   </main>
 
+  <dialog id="lightbox" class="lightbox">
+    <button type="button" class="lightbox-close" aria-label="Schliessen">✕</button>
+    <img id="lightboxImg" alt="" />
+  </dialog>
+
   <dialog id="infoDialog" class="glass info-dialog">
     <h3>So funktioniert's</h3>
     <ul>
@@ -129,6 +143,7 @@
             Link
           </a>
         </div>
+        <div class="wish-gallery" hidden></div>
       </div>
       <div class="wish-actions">
         <button class="btn btn-ghost btn-reserve" type="button">Reservieren</button>
