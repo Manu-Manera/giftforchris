@@ -99,7 +99,7 @@ form.addEventListener("submit", async (e) => {
   const entry = {
     title,
     link: linkInput.value.trim() || "",
-    author: "",
+    author: "Chris",
     note: noteInput.value.trim() || "",
     images,
     reserved: false,
@@ -208,16 +208,14 @@ function buildItem(w) {
 
   const authorEl = node.querySelector(".author");
   const dotSep = node.querySelector(".dot-sep");
-  authorEl.textContent = w.author ? `vo ${w.author}` : "";
+  const displayAuthor = w.author || "Chris";
+  authorEl.textContent = `vo ${displayAuthor}`;
 
   const linkEl = node.querySelector(".wish-link");
   if (w.link) {
     linkEl.href = w.link;
     linkEl.hidden = false;
-    dotSep.hidden = !w.author;
-  }
-  if (!w.author && !w.link) {
-    node.querySelector(".wish-meta").hidden = true;
+    dotSep.hidden = false;
   }
 
   const badge = node.querySelector(".badge");
