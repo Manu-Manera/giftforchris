@@ -1,16 +1,8 @@
-// Ersetze diese Werte durch deine Firebase-Projekt-Konfiguration.
-// Anleitung siehe README.md ("Firebase einrichten").
-//
-// So lange die Werte mit "REPLACE_" beginnen, läuft die Seite im
-// Lokal-Modus (Einträge bleiben nur im Browser). Sobald echte Werte
-// eingetragen sind, werden alle Wünsche in Firestore synchronisiert
-// und sind für alle Besucher sichtbar.
-
 export const firebaseConfig = {
-  apiKey: "REPLACE_API_KEY",
-  authDomain: "REPLACE_PROJECT.firebaseapp.com",
-  projectId: "REPLACE_PROJECT",
-  storageBucket: "REPLACE_PROJECT.appspot.com",
-  messagingSenderId: "REPLACE_SENDER_ID",
-  appId: "REPLACE_APP_ID",
+  apiKey: "AIzaSyBA10flQpeBbPh7iu0iJa7kJZaBd2X1bbo",
+  authDomain: "chris-wishlist.firebaseapp.com",
+  projectId: "chris-wishlist",
+  storageBucket: "chris-wishlist.firebasestorage.app",
+  messagingSenderId: "567894237947",
+  appId: "1:567894237947:web:257d547dd8336a8c09865e",
 };
